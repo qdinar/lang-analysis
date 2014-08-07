@@ -203,16 +203,130 @@ ngram(2,$corpus,u('э'),2);
 //ngram(6,$corpus,u(''),1);
 //ngram(7,$corpus,u(''),1);
 
-
-$split=explode(u(' '),$corpus);
+//$sp=' ';
+//$split=explode(u($sp),$corpus);
 //foreach($split as $value){
 	//echo mb_convert_encoding($value,'utf-8').' ';
 //}
-//wngram($split,1);
-//wngram($split,2);
-//wngram($split,3);
+//wngram($split,1,$sp);
+//wngram($split,2,$sp);
+//wngram($split,3,$sp);
 
-function wngram($split,$n){
+//$sp='а';
+//$split=explode(u($sp),$corpus);
+//wngram($split,1,$sp);
+//wngram($split,2,$sp);
+
+//$sp='н';
+//$split=explode(u($sp),$corpus);
+//wngram($split,1,$sp);
+
+//ngvdist(1);
+//diagram(1);
+
+//test:
+//$tmparr=array('a'=>9);
+//echo($tmparr[0]);
+//does not work
+
+//ngram(2,$corpus,u(''),1);
+//diagram(2);
+
+//ngram(2,$corpus,u(''),1);
+//" б" 4088; "ар" 3743; " к" 3632; "а " 3629; "н " 3339; "ла" 3083; ", " 2866; "ан" 2828; " т" 2798; "лә" 2663; "ә " 2540; "ен" 2173; "га" 2160; " а" 2149; "ал" 2126; "та" 2105; ". " 2053; "р " 2039; "е " 2030; "әр" 2003; "ел" 1949; "ы " 1945; "ән" 1860; "да" 1808; "ын" 1805; "ка" 1770; " д" 1680; "ер" 1668; "ны" 1599; " и" 1563; "бе" 1549; "дә" 1408; " м" 1398; "ул" 1383; "на" 1374; " с" 1364; "ре" 1320; "нд" 1311; "ры" 1309; "ат" 1289; "лы" 1276; "ң " 1235; "п " 1226; "ба" 1213; "ле" 1191; "ра" 1167; "те" 1138; "бу" 1127; "гә" 1118; "не" 1080; "к " 1038; "нә" 1005; ....
+
+//$corpus=str_replace(u(' б'),u(char('e000')),$corpus);
+//$corpus=str_replace(u(' б'),"\xe0\x00",$corpus);
+
+ngram(2,$corpus,u(''),1);
+$search=array();
+$replace=array();
+$i=0;
+foreach($ngram[2] as $k=>$v){
+	if($i==100)break;
+	$search[$i]=$k;
+	$replace[$i]=u(char(dechex(0xe000+$i)));
+	$replace[$i]=int_to_u(0xe000+$i);
+	$i++;
+}
+//print_r($search);
+//print_r($replace);
+//print_r($ngram[1]);
+$corpus=str_replace($search,$replace,$corpus);
+//echo getu8($corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+
+$i=100;
+foreach($ngram[2] as $k=>$v){
+	if($i==200)break;
+	$search[$i]=$k;
+	$replace[$i]=u(char(dechex(0xe000+$i)));
+	$replace[$i]=int_to_u(0xe000+$i);
+	$i++;
+}
+$corpus=str_replace($search,$replace,$corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+
+$i=200;
+foreach($ngram[2] as $k=>$v){
+	if($i==300)break;
+	$search[$i]=$k;
+	$replace[$i]=u(char(dechex(0xe000+$i)));
+	$replace[$i]=int_to_u(0xe000+$i);
+	$i++;
+}
+$corpus=str_replace($search,$replace,$corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+
+
+
+
+//test from http://stackoverflow.com/questions/6058394/unicode-character-in-php-string
+//$unicodeChar = '\u1000';
+//echo json_decode('"'.$unicodeChar.'"');
+//test
+//echo getu8("\x10\x00");//က
+//echo dechex(0xe000+1);//e001
+//$n1='10';$n2='00';
+//echo getu8("\x$n1\x$n2");/does not work
+//echo ("\x$n1\x$n2");//\x10\x00
+//echo (eval('"\x$n1\x$n2"'));//Parse error: syntax error, unexpected end of file in C:\xampp\htdocs\lang-analysis\index.php(263) : eval()'d code on line 1
+//eval("echo(\"\x$n1\x$n2\");");//Notice: Undefined variable: n1 in C:\xampp\htdocs\lang-analysis\index.php on line 264
+
+function diagram($n){
+	global $ngram;
+	foreach($ngram[$n] as $k=>$v){
+		echo '<div title="'.getu8($k).'" style="border:1px solid; height:'.$v.'px; width:10px; display:inline-block;"></div>';
+		/*
+		if($k!=u(' ')){
+			echo '<div title="'.getu8($k).'" style="border:1px solid; height:'.(100*$prev/$v).'px; width:10px; display:inline-block;"></div>';
+		}
+		$prev=$v;
+		*/
+	}
+}
+
+function ngvdist($n){
+	global $ngram;
+	$tmparr=array();
+	$prevv=0;
+	foreach($ngram[$n] as $k=>$v){
+		$tmparr[$k]=abs($prevv-$ngram[$n][$k]);
+		$prevv=$ngram[$n][$k];
+	}
+	arsort($tmparr);
+	foreach($tmparr as $k=>$v){
+		echo '"'.getu8($k).'" '.$v.'; ';
+	}
+}
+
+function wngram($split,$n,$sp){
 	global $wngram;
 	$splitc=count($split);
 	if(!isset($wngram)){
@@ -232,7 +346,7 @@ function wngram($split,$n){
 	for($i=0;$i<$n;$i++){
 		array_push($nw,$split[$i]);
 	}
-	$nwi=implode(u(' '),$nw);
+	$nwi=implode(u($sp),$nw);
 	if(!isset($wngram[$n][$nwi])){
 		$wngram[$n][$nwi]=1;
 	}else{
@@ -241,7 +355,7 @@ function wngram($split,$n){
 	for($i=$n;$i<$splitc-$n+1;$i++){
 		array_push($nw,$split[$i]);
 		array_shift($nw);
-		$nwi=implode(u(' '),$nw);
+		$nwi=implode(u($sp),$nw);
 		if(!isset($wngram[$n][$nwi])){
 			$wngram[$n][$nwi]=1;
 		}else{
@@ -250,7 +364,7 @@ function wngram($split,$n){
 	}
 	arsort($wngram[$n]);
 	foreach($wngram[$n] as $k=>$v){
-		echo '"'.mb_convert_encoding($k,'utf-8').'" '.$v.'; ';
+		echo '"'.getu8($k).'" '.$v.'; ';
 	}
 }
 
@@ -310,13 +424,15 @@ function ngram($n,$corpus,$bas,$t){
 		//echo round(($value/$prev)*100).'% ';
 		//$prev=$value;
 		*/
-		echo '"'.mb_convert_encoding($key,'utf-8').'"';
+		echo '"'.getu8($key).'"';
 		echo ' '.$value;
+		/*
 		if(isset($ngram[$ostalma_ozonlogo])&&$n>1&&$bas_ozonlogo>0&&$t!=3){
 			if(!isset($tmparr))$tmparr=array();
 			$tmparr[$key]=round(100*$value/$ngram[$ostalma_ozonlogo][$ostalma]);
-			//echo ' '.$tmparr[$key];
+			echo ' '.$tmparr[$key];
 		}
+		*/
 		//echo '<div style="border:1px solid; height:'.round($value/100).'px; width:0px; display:inline-block;"></div>';// font-size:0px;
 		/*
 		if(!isset($prev))$prev=$value;
@@ -346,7 +462,7 @@ function ngram($n,$corpus,$bas,$t){
 		echo '<br>';
 		arsort($tmparr);
 		foreach($tmparr as $key=>$value){
-			echo '"'.mb_convert_encoding($key,'utf-8').'" '.$value.'; ';
+			echo '"'.getu8($key).'" '.$value.'; ';
 		}
 	}
 	echo '<br><br>';
@@ -358,11 +474,32 @@ function u($inp){
 	//return iconv('utf-8','ucs-2',$inp);
 }
 
+function getu8($inp){
+	global $replace, $search;
+	$inp=str_replace($replace,$search,$inp);
+	$inp=str_replace($replace,$search,$inp);
+	$inp=str_replace($replace,$search,$inp);
+	return mb_convert_encoding($inp,'utf-8');
+}
 
+function enc($inp){
+	return json_decode('"'.$inp.'"');
+}
 
+function char($inp){
+	return json_decode('"\u'.$inp.'"');
+}
 
-
-
+function int_to_u($num){
+	return mb_convert_encoding(json_decode('"\u'.dechex($num).'"'),'ucs-2','utf-8');
+	/*
+	//i think this will not work if i try it, i tested that way in line 262
+	$div=$num/0x100;//10/4=2.5
+	$divint=floor($div);//2
+	$remainder=$num-$divint*0x100;//10-2*4=2
+	return "\x{$divint}\x{$remainder}";
+	*/
+}
 
 
 
