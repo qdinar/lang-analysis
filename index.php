@@ -1,4 +1,5 @@
 ﻿<?php
+$t1=microtime(true);
 header('Content-Type: text/html; charset=utf-8');
 //header('Content-Type: text/html; charset=ucs-2');
 
@@ -7,7 +8,7 @@ header('Content-Type: text/html; charset=utf-8');
 $corpus=file_get_contents('corpus.txt');
 //echo $corpus;
 mb_internal_encoding('utf8');
-$corpus=mb_strtolower($corpus);
+//$corpus=mb_strtolower($corpus);
 //echo $corpus;
 $corpus=mb_convert_encoding($corpus,'ucs-2');
 mb_internal_encoding('ucs-2');
@@ -241,19 +242,53 @@ ngram(2,$corpus,u('э'),2);
 ngram(2,$corpus,u(''),1);
 $search=array();
 $replace=array();
+$searchvalstoshow=array();
+
+$i=0;
+$howmanytimes=3;
+for($j=0;$j<$howmanytimes;$j++){
+	$search[$j]=array();
+	$replace[$j]=array();
+	$searchvalstoshow[$j]=array();
+	$ngtogetc=floor(count($ngram[2])/25);
+	$m=0;
+	echo '<h5>'.$j.'</h5><br>';
+	foreach($ngram[2] as $k=>$v){
+		//if($i==100*$j+100)break;
+		if($m==$ngtogetc)break;
+		$search[$j][$i]=$k;
+		//$searchvalstoshow[$j][$i]=$k;
+		$searchvalstoshow[$j][$i]=u('(').$k.u(')');
+		$replace[$j][$i]=int_to_u(0xe000+$i);
+		echo getu8($search[$j][$i]).' '.getu8($replace[$j][$i]).'; ';
+		$i++;
+		$m++;
+	}
+	echo '<br>';
+	//print_r($search);
+	//print_r($replace);
+	//print_r($ngram[1]);
+	$corpus=str_replace($search[$j],$replace[$j],$corpus);
+	// $se=$search[$j];
+	// $re=$replace[$j];
+	// $corpus=str_replace($se,$re,$corpus);
+	//echo getu8($corpus);
+	unset($ngram);
+	ngram(1,$corpus,u(''),1);
+	ngram(2,$corpus,u(''),1);
+}
+
+
+/*
 $i=0;
 foreach($ngram[2] as $k=>$v){
 	if($i==100)break;
 	$search[$i]=$k;
-	$replace[$i]=u(char(dechex(0xe000+$i)));
+	//$replace[$i]=u(char(dechex(0xe000+$i)));
 	$replace[$i]=int_to_u(0xe000+$i);
 	$i++;
 }
-//print_r($search);
-//print_r($replace);
-//print_r($ngram[1]);
 $corpus=str_replace($search,$replace,$corpus);
-//echo getu8($corpus);
 unset($ngram);
 ngram(1,$corpus,u(''),1);
 ngram(2,$corpus,u(''),1);
@@ -262,7 +297,7 @@ $i=100;
 foreach($ngram[2] as $k=>$v){
 	if($i==200)break;
 	$search[$i]=$k;
-	$replace[$i]=u(char(dechex(0xe000+$i)));
+	//$replace[$i]=u(char(dechex(0xe000+$i)));
 	$replace[$i]=int_to_u(0xe000+$i);
 	$i++;
 }
@@ -283,9 +318,88 @@ $corpus=str_replace($search,$replace,$corpus);
 unset($ngram);
 ngram(1,$corpus,u(''),1);
 ngram(2,$corpus,u(''),1);
+*/
+/*
+$search1=array();
+$replace1=array();
+$i=0;
+foreach($ngram[2] as $k=>$v){
+	if($i==100)break;
+	$search1[$i]=$k;
+	$replace1[$i]=int_to_u(0xe000+$i);
+	$i++;
+}
+$corpus=str_replace($search1,$replace1,$corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+
+$search2=array();
+$replace2=array();
+$i=100;
+foreach($ngram[2] as $k=>$v){
+	if($i==200)break;
+	$search2[$i]=$k;
+	$replace2[$i]=int_to_u(0xe000+$i);
+	$i++;
+}
+$corpus=str_replace($search2,$replace2,$corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+*/
+
+/*
+$search[0]=array();
+$replace[0]=array();
+$i=0;
+foreach($ngram[2] as $k=>$v){
+	if($i==100)break;
+	$search[0][$i]=$k;
+	$replace[0][$i]=int_to_u(0xe000+$i);
+	$i++;
+}
+$corpus=str_replace($search[0],$replace[0],$corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+
+$search[1]=array();
+$replace[1]=array();
+$i=100;
+foreach($ngram[2] as $k=>$v){
+	if($i==200)break;
+	$search[1][$i]=$k;
+	$replace[1][$i]=int_to_u(0xe000+$i);
+	echo getu8($search[1][$i]).' '.getu8($replace[1][$i]).'; ';
+	$i++;
+}
+echo '<br>';
+$corpus=str_replace($search[1],$replace[1],$corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+
+$search[2]=array();
+$replace[2]=array();
+$i=100;
+foreach($ngram[2] as $k=>$v){
+	if($i==200)break;
+	$search[2][$i]=$k;
+	$replace[2][$i]=int_to_u(0xe000+$i);
+	$i++;
+}
+$corpus=str_replace($search[2],$replace[2],$corpus);
+unset($ngram);
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+*/
 
 
 
+$t2=microtime(true);
+$time=$t2-$t1;
+echo '<br />'.$time;
 
 //test from http://stackoverflow.com/questions/6058394/unicode-character-in-php-string
 //$unicodeChar = '\u1000';
@@ -400,7 +514,9 @@ function ngram($n,$corpus,$bas,$t){
 		arsort($ngram[$n]);
 	}
 	//foreach($ngram as $key=>$value){
+	$counter=0;
 	foreach($ngram[$n] as $key=>$value){
+		$counter++;
 		if($t==1){
 			if($bas!=mb_substr($key,0,$bas_ozonlogo)){
 				continue;
@@ -424,6 +540,7 @@ function ngram($n,$corpus,$bas,$t){
 		//echo round(($value/$prev)*100).'% ';
 		//$prev=$value;
 		*/
+		//echo $counter.' ';
 		echo '"'.getu8($key).'"';
 		echo ' '.$value;
 		/*
@@ -475,10 +592,23 @@ function u($inp){
 }
 
 function getu8($inp){
-	global $replace, $search;
-	$inp=str_replace($replace,$search,$inp);
-	$inp=str_replace($replace,$search,$inp);
-	$inp=str_replace($replace,$search,$inp);
+	global $replace, $search, $howmanytimes;
+	global $searchvalstoshow;
+	for($j=$howmanytimes-1;$j>=0;$j--){
+		if(isset($search[$j]))$inp=str_replace($replace[$j],$searchvalstoshow[$j],$inp);
+	}
+	// if(isset($search[2]))$inp=str_replace($replace[2],$search[2],$inp);
+	// if(isset($search[1]))$inp=str_replace($replace[1],$search[1],$inp);
+	// if(isset($search[0]))$inp=str_replace($replace[0],$search[0],$inp);
+	// $inp=str_replace($replace,$search,$inp);
+	// $inp=str_replace($replace,$search,$inp);
+	// $inp=str_replace($replace,$search,$inp);
+	
+	// global $replace1, $search1;
+	// global $replace2, $search2;
+	// $inp=str_replace($replace2,$search2,$inp);
+	// $inp=str_replace($replace1,$search1,$inp);
+	
 	return mb_convert_encoding($inp,'utf-8');
 }
 
