@@ -51,7 +51,7 @@ foreach($bir as $key=>$value){
 echo '<br><br>';
 */
 
-ngram(1,$corpus,u(''),1);
+//ngram(1,$corpus,u(''),1);
 
 
 /*
@@ -239,10 +239,13 @@ ngram(2,$corpus,u('э'),2);
 //$corpus=str_replace(u(' б'),u(char('e000')),$corpus);
 //$corpus=str_replace(u(' б'),"\xe0\x00",$corpus);
 
-ngram(2,$corpus,u(''),1);
+//ngram(2,$corpus,u(''),1);
+/*
 $search=array();
 $replace=array();
 $searchvalstoshow=array();
+
+
 
 $i=0;
 $howmanytimes=3;
@@ -278,8 +281,12 @@ for($j=0;$j<$howmanytimes;$j++){
 	ngram(2,$corpus,u(''),1);
 }
 
+*/
+
+
+
 //echo '';
-echo test_getu8('');
+//echo test_getu8('');
 //echo $replace[2][''];
 
 
@@ -398,6 +405,40 @@ unset($ngram);
 ngram(1,$corpus,u(''),1);
 ngram(2,$corpus,u(''),1);
 */
+
+//new investigation
+ngram(1,$corpus,u(''),1);
+//echo ($ng1size=count($ngram[1])).' '.($ng1size*$ng1size);//22500
+ngram(2,$corpus,u(''),1);
+//echo ($ng2size=count($ngram[2]));//2609
+echo 'first letter in left, second letter in top<br>';
+echo '<table>';
+echo '<tr>';
+	echo '<td>';
+	echo '</td>';
+	foreach($ngram[1] as $letter2=>$val2){
+		echo '<td>';
+			echo su8($letter2);
+		echo '</td>';
+	}
+echo '</tr>';
+foreach($ngram[1] as $letter1=>$val){
+	echo '<tr>';
+	echo '<td>';
+	echo su8($letter1);
+	echo '</td>';
+	foreach($ngram[1] as $letter2=>$val2){
+		echo '<td>';
+		if(isset($ngram[2][$letter1.$letter2])){
+			echo $ngram[2][$letter1.$letter2];
+		}
+		echo '</td>';
+	}
+	echo '</tr>';
+	echo "\n";
+}
+echo'</table>';
+
 
 
 
@@ -546,8 +587,8 @@ function ngram($n,$corpus,$bas,$t){
 		//$prev=$value;
 		*/
 		//echo $counter.' ';
-		echo '"'.getu8($key).'"';
-		//echo '"'.getu8old($key).'"';
+		//echo '"'.getu8($key).'"';
+		echo '"'.getu8old($key).'"';
 		echo ' '.$value;
 		// if($key==u('')){
 			// echo getu8($key);
