@@ -260,7 +260,7 @@ for($j=0;$j<$howmanytimes;$j++){
 		//$searchvalstoshow[$j][$i]=$k;
 		$searchvalstoshow[$j][$i]=u('(').$k.u(')');
 		$replace[$j][$i]=int_to_u(0xe000+$i);
-		echo getu8($search[$j][$i]).' '.getu8($replace[$j][$i]).'; ';
+		echo su8($search[$j][$i]).' '.su8($replace[$j][$i]).'; ';
 		$i++;
 		$m++;
 	}
@@ -277,6 +277,10 @@ for($j=0;$j<$howmanytimes;$j++){
 	ngram(1,$corpus,u(''),1);
 	ngram(2,$corpus,u(''),1);
 }
+
+//echo '';
+echo test_getu8('');
+//echo $replace[2][''];
 
 
 /*
@@ -484,6 +488,7 @@ function wngram($split,$n,$sp){
 
 function ngram($n,$corpus,$bas,$t){
 	global $ngram;
+	//global $j;
 	$corpus_ozonlogo=mb_strlen($corpus);
 	//$ngram=array();
 	if(!isset($ngram)){
@@ -542,7 +547,13 @@ function ngram($n,$corpus,$bas,$t){
 		*/
 		//echo $counter.' ';
 		echo '"'.getu8($key).'"';
+		//echo '"'.getu8old($key).'"';
 		echo ' '.$value;
+		// if($key==u('')){
+			// echo getu8($key);
+			// test_getu8($key);
+			// exit;
+		// };
 		/*
 		if(isset($ngram[$ostalma_ozonlogo])&&$n>1&&$bas_ozonlogo>0&&$t!=3){
 			if(!isset($tmparr))$tmparr=array();
@@ -575,6 +586,7 @@ function ngram($n,$corpus,$bas,$t){
 		*/
 		echo '; ';
 	}
+	/*
 	if(isset($tmparr)){
 		echo '<br>';
 		arsort($tmparr);
@@ -582,6 +594,7 @@ function ngram($n,$corpus,$bas,$t){
 			echo '"'.getu8($key).'" '.$value.'; ';
 		}
 	}
+	*/
 	echo '<br><br>';
 }
 
@@ -594,8 +607,34 @@ function u($inp){
 function getu8($inp){
 	global $replace, $search, $howmanytimes;
 	global $searchvalstoshow;
-	for($j=$howmanytimes-1;$j>=0;$j--){
-		if(isset($search[$j]))$inp=str_replace($replace[$j],$searchvalstoshow[$j],$inp);
+	// for($j=$howmanytimes-1;$j>=0;$j--){
+		// if(isset($search[$j]))$inp=str_replace($replace[$j],$searchvalstoshow[$j],$inp);
+	// }
+	//print_r($inp);exit;
+	global $j;
+	//echo $j;exit;
+	if(isset($j)){
+		//var_dump( $j);exit;
+		for($y=$j;$y>=0;$y--){
+			// echo $y;
+			// $inp=str_split($inp,2);
+			// echo '<'.count($inp).'>';
+			// for($z=0;$z<count($inp);$z++){
+				// echo su8($inp[$z]).':';
+				// echo dechex(unpack('n',$inp[$z])[1]).':';
+				// $inp[$z]=str_replace($replace[$y],$searchvalstoshow[$y],$inp[$z]);
+			// }
+			// $inp=implode($inp);
+			//for($zz=0;$zz<count($replace[$y]);$zz++){
+			foreach($replace[$y] as $k=>$v ){
+				$inp=str_split($inp,2);
+				for($z=0;$z<count($inp);$z++){
+					//$inp[$z]=str_replace($replace[$y][$zz],$searchvalstoshow[$y][$zz],$inp[$z]);
+					$inp[$z]=str_replace($v,$searchvalstoshow[$y][$k],$inp[$z]);
+				}
+				$inp=implode($inp);
+			}
+		}
 	}
 	// if(isset($search[2]))$inp=str_replace($replace[2],$search[2],$inp);
 	// if(isset($search[1]))$inp=str_replace($replace[1],$search[1],$inp);
@@ -610,6 +649,28 @@ function getu8($inp){
 	// $inp=str_replace($replace1,$search1,$inp);
 	
 	return mb_convert_encoding($inp,'utf-8');
+}
+function getu8old($inp){
+	global $replace, $search, $howmanytimes;
+	global $searchvalstoshow;
+	for($j=$howmanytimes-1;$j>=0;$j--){
+		if(isset($search[$j]))$inp=str_replace($replace[$j],$searchvalstoshow[$j],$inp);
+	}
+	return mb_convert_encoding($inp,'utf-8');
+}
+function su8($inp){
+	return mb_convert_encoding($inp,'utf-8');
+}
+function test_getu8($inp){
+	global $replace, $search, $howmanytimes;
+	global $searchvalstoshow;
+	for($j=$howmanytimes-1;$j>=0;$j--){
+		echo ' '.$j.'---'.su8($inp).'; ';//.' '.$replace[$j][$inp]
+		if(isset($search[$j]))$inp=str_replace($replace[$j],$searchvalstoshow[$j],$inp);
+		//if(isset($search[$j]))$inp=str_replace($replace[$j],$search[$j],$inp);
+	}
+	echo ' '.$j.'---'.su8($inp).'; ';
+	//return mb_convert_encoding($inp,'utf-8');
 }
 
 function enc($inp){
