@@ -406,6 +406,7 @@ ngram(1,$corpus,u(''),1);
 ngram(2,$corpus,u(''),1);
 */
 
+/*
 //new investigation
 ngram(1,$corpus,u(''),1);
 //echo ($ng1size=count($ngram[1])).' '.($ng1size*$ng1size);//22500
@@ -438,6 +439,60 @@ foreach($ngram[1] as $letter1=>$val){
 	echo "\n";
 }
 echo'</table>';
+*/
+
+ngram(1,$corpus,u(''),1);
+ngram(2,$corpus,u(''),1);
+$spektr_by_next_letter=array();
+foreach($ngram[1] as $letter1=>$val1){
+	$spektr_by_next_letter[$letter1]=array();
+	calc_sredn:{
+		$valsum=0;
+		foreach($ngram[1] as $letter2=>$val2){
+			if(isset($ngram[2][$letter1.$letter2])){
+				$valsum+=$ngram[2][$letter1.$letter2];
+			}
+		}
+		$sredn=$valsum/count($ngram[1]);
+	}
+	foreach($ngram[1] as $letter2=>$val2){
+		if(isset($ngram[2][$letter1.$letter2])){
+			//$spektr_by_next_letter[$letter1][$letter2]=$ngram[2][$letter1.$letter2];
+			$spektr_by_next_letter[$letter1][$letter2]=$ngram[2][$letter1.$letter2]/$sredn;
+		}else{
+			$spektr_by_next_letter[$letter1][$letter2]=0;
+		}
+	}
+}
+$diff_by_spectr=array();
+foreach($ngram[1] as $letter1=>$val1){
+	$diff_by_spectr[$letter1]=array();
+	foreach($ngram[1] as $letter2=>$val2){
+		$diff_by_spectr[$letter1][$letter2]=calc_diff_by_spectr($letter1,$letter2);
+	}
+}
+//print_r($diff_by_spectr);
+function calc_diff_by_spectr($l1,$l2){
+	global $spektr_by_next_letter;
+	global $ngram;
+	$sum_of_squares=0;
+	foreach($ngram[1] as $letter1=>$val1){
+		$sum_of_squares+=pow($spektr_by_next_letter[$l1][$letter1]-$spektr_by_next_letter[$l2][$letter1],2);
+	}
+	return sqrt($sum_of_squares);
+}
+//exit;
+foreach($ngram[1] as $letter1=>$val1){
+	echo su8($letter1).':';
+	asort($diff_by_spectr[$letter1]);
+	foreach($diff_by_spectr[$letter1] as $letter2=>$val2){
+		$tmpl=su8($letter2);
+		if($tmpl=="\n"){$tmpl="BR";}
+		echo $tmpl.':'.intval($val2).' ';
+	}
+	echo'<br><br>';
+}
+
 
 
 
@@ -588,7 +643,10 @@ function ngram($n,$corpus,$bas,$t){
 		*/
 		//echo $counter.' ';
 		//echo '"'.getu8($key).'"';
-		echo '"'.getu8old($key).'"';
+		//echo '"'.getu8old($key).'"';
+		$tmpl=getu8old($key);
+		if($tmpl=="\n"){$tmpl="BR";}
+		echo '"'.$tmpl.'"';
 		echo ' '.$value;
 		// if($key==u('')){
 			// echo getu8($key);
