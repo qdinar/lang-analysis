@@ -444,57 +444,199 @@ echo'</table>';
 ngram(1,$corpus,u(''),1);
 ngram(2,$corpus,u(''),1);
 $spektr_by_next_letter=array();
+$spektr_by_prev_letter=array();
 foreach($ngram[1] as $letter1=>$val1){
 	$spektr_by_next_letter[$letter1]=array();
+	$spektr_by_prev_letter[$letter1]=array();
 	calc_sredn:{
 		$valsum=0;
+		$valsum_by_prev=0;
 		foreach($ngram[1] as $letter2=>$val2){
 			if(isset($ngram[2][$letter1.$letter2])){
 				$valsum+=$ngram[2][$letter1.$letter2];
 			}
+			if(isset($ngram[2][$letter2.$letter1])){
+				$valsum_by_prev+=$ngram[2][$letter2.$letter1];
+			}
 		}
 		$sredn=$valsum/count($ngram[1]);
+		$sredn_by_prev=$valsum_by_prev/count($ngram[1]);
 	}
 	foreach($ngram[1] as $letter2=>$val2){
 		if(isset($ngram[2][$letter1.$letter2])){
-			//$spektr_by_next_letter[$letter1][$letter2]=$ngram[2][$letter1.$letter2];
+			//$spektr_by_next_letter[$letter1][$letter2]=$ngram[2][$letter1.$letter2];//i have tried this , it makes worse result
 			$spektr_by_next_letter[$letter1][$letter2]=$ngram[2][$letter1.$letter2]/$sredn;
 		}else{
 			$spektr_by_next_letter[$letter1][$letter2]=0;
 		}
+		if(isset($ngram[2][$letter2.$letter1])){
+			$spektr_by_prev_letter[$letter1][$letter2]=$ngram[2][$letter2.$letter1]/$sredn_by_prev;
+		}else{
+			$spektr_by_prev_letter[$letter1][$letter2]=0;
+		}
 	}
 }
-$diff_by_spectr=array();
+$diff_by_spektr=array();
+$diff_by_spektr_by_prev=array();
 foreach($ngram[1] as $letter1=>$val1){
-	$diff_by_spectr[$letter1]=array();
+	$diff_by_spektr[$letter1]=array();
+	$diff_by_spektr_by_prev[$letter1]=array();
 	foreach($ngram[1] as $letter2=>$val2){
-		$diff_by_spectr[$letter1][$letter2]=calc_diff_by_spectr($letter1,$letter2);
+		$diff_by_spektr[$letter1][$letter2]=calc_diff_by_spektr($letter1,$letter2,$spektr_by_next_letter);
+		$diff_by_spektr_by_prev[$letter1][$letter2]=calc_diff_by_spektr($letter1,$letter2,$spektr_by_prev_letter);
 	}
 }
-//print_r($diff_by_spectr);
-function calc_diff_by_spectr($l1,$l2){
-	global $spektr_by_next_letter;
+//print_r($diff_by_spektr);
+function calc_diff_by_spektr($l1,$l2,$spektr){
+	// if($l1==u('а')&&$l2==u('у')){
+		// echo'<br>';
+	// }
+	//global $spektr_by_next_letter;
 	global $ngram;
 	$sum_of_squares=0;
 	foreach($ngram[1] as $letter1=>$val1){
-		$sum_of_squares+=pow($spektr_by_next_letter[$l1][$letter1]-$spektr_by_next_letter[$l2][$letter1],2);
+		//$sum_of_squares+=pow($spektr_by_next_letter[$l1][$letter1]-$spektr_by_next_letter[$l2][$letter1],2);
+		$sum_of_squares+=pow($spektr[$l1][$letter1]-$spektr[$l2][$letter1],2);
+		// if($l1==u('а')&&$l2==u('у')){
+			// echo '+('.$spektr[$l1][$letter1].'-'.$spektr[$l2][$letter1].')2';
+		// }
 	}
 	return sqrt($sum_of_squares);
 }
 //exit;
+
+/*
+echo'<br>';
+$sum_of_squares=0;
 foreach($ngram[1] as $letter1=>$val1){
+	//$sum_of_squares+=pow($spektr_by_next_letter[$l1][$letter1]-$spektr_by_next_letter[$l2][$letter1],2);
+	//$sum_of_squares+=pow($spektr[$l1][$letter1]-$spektr[$l2][$letter1],2);
+	$tmpl=su8($letter1);
+	if($tmpl=="\n"){$tmpl="[BR]";}
+	if($tmpl==" "){$tmpl="[SP]";}
+	echo $tmpl.'('.$spektr_by_prev_letter[u('а')][$letter1].':'.$spektr_by_prev_letter[u('у')][$letter1].':'.$spektr_by_prev_letter[u('-')][$letter1].')'.pow($spektr_by_prev_letter[u('а')][$letter1]-$spektr_by_prev_letter[u('у')][$letter1],2).':'.pow($spektr_by_prev_letter[u('а')][$letter1]-$spektr_by_prev_letter[u('-')][$letter1],2).'<br>';
+}
+*/
+/*
+echo $diff_by_spektr_by_prev[u('а')][u('у')];
+echo"<br>\n";
+echo $diff_by_spektr_by_prev[u('а')][u('-')];
+echo"<br>\n";
+*/
+
+foreach($ngram[1] as $letter1=>$val1){
+//foreach(array(u('а'),u('у'),u('-')) as $letter1){
+	
 	echo su8($letter1).':';
-	asort($diff_by_spectr[$letter1]);
-	foreach($diff_by_spectr[$letter1] as $letter2=>$val2){
+	asort($diff_by_spektr[$letter1]);
+	foreach($diff_by_spektr[$letter1] as $letter2=>$val2){
 		$tmpl=su8($letter2);
-		if($tmpl=="\n"){$tmpl="BR";}
+		if($tmpl=="\n"){$tmpl="[BR]";}
+		if($tmpl==" "){$tmpl="[SP]";}
 		echo $tmpl.':'.intval($val2).' ';
 	}
-	echo'<br><br>';
+	
+	echo"<br>\n";
+	echo su8($letter1).':';
+	asort($diff_by_spektr_by_prev[$letter1]);
+	foreach($diff_by_spektr_by_prev[$letter1] as $letter2=>$val2){
+		$tmpl=su8($letter2);
+		if($tmpl=="\n"){$tmpl="[BR]";}
+		if($tmpl==" "){$tmpl="[SP]";}
+		echo $tmpl.':'.intval($val2).' ';
+	}
+	/*
+	echo"<br>\n";
+	//arsort($spektr_by_prev_letter[$letter1]);
+	foreach($spektr_by_prev_letter[$letter1] as $letter2=>$val2){
+		echo ' "'.su8($letter2).'"-'.$val2;
+	}
+	*/
+	echo"<br><br>\n";
 }
 
+/*
+graf_spektr_by_prev(u('а'));
+echo"<br>\n";
+graf_spektr_by_prev(u('у'));
+echo"<br>\n";
+graf_spektr_by_prev(u('-'));
+echo"<br>\n";
+*/
 
+$away=15;
+$used=array();
+//foreach($diff_by_spektr_by_prev[u('а')] as $nearest=>$diff){
+//foreach($diff_by_spektr_by_prev[u('-')] as $nearest=>$diff){
+//foreach($diff_by_spektr_by_prev[u('у')] as $nearest=>$diff){
+//foreach($diff_by_spektr_by_prev[u('н')] as $nearest=>$diff){
+//bunch(u('н'));
 
+foreach($ngram[1] as $nextletter=>$val){
+	if(in_array($nextletter,$used))continue;
+	echo'<div style="border-bottom:1px solid gray">';
+	bunch($nextletter,$diff_by_spektr_by_prev);
+	echo'</div>';
+}
+echo'<br><br>';
+//unset($used);
+$away=35;
+$used=array();
+//echo count($used);
+foreach($ngram[1] as $nextletter=>$val){
+	if(in_array($nextletter,$used))continue;
+	//echo $nextletter;
+	echo'<div style="border-bottom:1px solid gray">';
+	bunch($nextletter,$diff_by_spektr);
+	echo'</div>';
+}
+function bunch($aletter,$diff_array){
+global $used, $away;
+foreach($diff_array[$aletter] as $nearest=>$diff){
+	if($diff>$away)break;
+	//if($nearest==u('а'))continue;
+	if(in_array($nearest,$used))continue;
+	//echo 'ok';
+	echo su8($nearest).':<br>';
+	$used[]=$nearest;
+	echo'<div style="margin-left:10px;">';
+	foreach($diff_array[$nearest] as $nearest2=>$diff2){
+		//echo'ok';
+		if($diff2>$away)break;
+		//if($nearest2==$nearest)continue;
+		if(in_array($nearest2,$used))continue;
+		echo su8($nearest2).':<br>';
+		$used[]=$nearest2;
+		echo'<div style="margin-left:10px;">';
+		foreach($diff_array[$nearest2] as $nearest3=>$diff3){
+			if($diff3>$away)break;
+			//if($nearest3==$nearest2)continue;
+			if(in_array($nearest3,$used))continue;
+			echo su8($nearest3).':<br>';
+			$used[]=$nearest3;
+			echo'<div style="margin-left:10px;">';
+			foreach($diff_array[$nearest2] as $nearest4=>$diff4){
+				if($diff4>$away)break;
+				//if($nearest4==$nearest3)continue;
+				if(in_array($nearest4,$used))continue;
+				echo su8($nearest4).':<br>';
+				$used[]=$nearest4;
+				echo'<div style="margin-left:10px;">';
+				foreach($diff_array[$nearest4] as $nearest5=>$diff5){
+					if($diff5>$away)break;
+					if(in_array($nearest5,$used))continue;
+					echo su8($nearest5).':<br>';
+					$used[]=$nearest5;
+				}
+				echo'</div>';
+			}
+			echo'</div>';
+		}
+		echo'</div>';
+	}
+	echo'</div>';
+}
+}
 
 
 $t2=microtime(true);
@@ -512,6 +654,15 @@ echo '<br />'.$time;
 //echo ("\x$n1\x$n2");//\x10\x00
 //echo (eval('"\x$n1\x$n2"'));//Parse error: syntax error, unexpected end of file in C:\xampp\htdocs\lang-analysis\index.php(263) : eval()'d code on line 1
 //eval("echo(\"\x$n1\x$n2\");");//Notice: Undefined variable: n1 in C:\xampp\htdocs\lang-analysis\index.php on line 264
+
+function graf_spektr_by_prev($l){
+	global $ngram, $spektr_by_prev_letter;
+	foreach($ngram[1] as $k=>$v){
+		echo '<div title="'.su8($k).'" style="border:1px solid; height:'.$spektr_by_prev_letter[$l][$k].'px; width:3px; display:inline-block;"></div>';
+	}
+}
+
+
 
 function diagram($n){
 	global $ngram;
@@ -597,7 +748,11 @@ function ngram($n,$corpus,$bas,$t){
 		//else{echo'ready';}
 		//echo $bas_ozonlogo;
 		//echo $bas;
-		for($i=0,$nharif='';$i<$corpus_ozonlogo-$n+1;$i++,$nharif=mb_substr($corpus,$i,$n)){
+		for($i=0;$i<$corpus_ozonlogo-$n+1;$i++){
+			$nharif=mb_substr($corpus,$i,$n);
+			//if($nharif==''){exit;}
+			//if($i==0){echo'"'.su8($nharif).'"; ';}
+			//if($i==0){echo'"'.dechex(unpack('n',$nharif)[1]).'"; ';}//feff
 			/*
 			if(!isset($ngram[$nharif])){
 				$ngram[$nharif]=1;
@@ -644,9 +799,13 @@ function ngram($n,$corpus,$bas,$t){
 		//echo $counter.' ';
 		//echo '"'.getu8($key).'"';
 		//echo '"'.getu8old($key).'"';
-		$tmpl=getu8old($key);
-		if($tmpl=="\n"){$tmpl="BR";}
-		echo '"'.$tmpl.'"';
+		//$tmpl=getu8old($key);
+		$tmpl=$key;
+		//if($tmpl==u("\n")){$tmpl=u("BR");}
+		if(mb_substr($tmpl,0,1)==u(" ")){$tmpl=u("SP").mb_substr($tmpl,1);}
+		if(mb_substr($tmpl,0,1)==u("\n")){$tmpl=u("BR").mb_substr($tmpl,1);}
+		//echo '"'.$tmpl.'"';
+		echo '"'.getu8old($tmpl).'"';
 		echo ' '.$value;
 		// if($key==u('')){
 			// echo getu8($key);
